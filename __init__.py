@@ -20,8 +20,8 @@ class Connector:
                 self.current_message += item
         self.read_queue = ''
         if self.write_queue:
-            self.write_queue = self.write_queue[self.sock.send(self.write_queue):]
-
+            try: self.write_queue = self.write_queue[self.sock.send(self.write_queue):]
+            except socket.error: return True
     def message(self,msg):
         print 'Received message from ['+self.addr[0]+':'+str(self.addr[1])+']'
         print msg
@@ -40,7 +40,9 @@ class Connector:
 
            
         if to_read and not in_err:
-            self.read_queue += self.sock.recv(4096)    
+            try: self.read_queue += self.sock.recv(4096)    
+            except socket.error:
+                return False
         if in_err:
             ret = False
 
