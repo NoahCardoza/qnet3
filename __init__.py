@@ -52,6 +52,10 @@ class Connector:
                 return False
         return ret
 
+    def close(self):
+        self.sock.shutdown(socket.SHUT_RDWR)
+        self.sock.close()
+
 class Server:
     def __init__(self,host,port,connector):
         self.host = host
@@ -61,6 +65,7 @@ class Server:
         self.connector = connector
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setblocking(0)
         self.sock.bind((host,port))
         self.sock.listen(5)
@@ -81,6 +86,10 @@ class Server:
 
         self.connections.append(self.connector(sock,addr))
 
+    def shutdown(self):
+        for _ in range(len(self.connections)):
+            c = self.connections.pop(0)
+            c.close()
 
 class Connection:
     def __init__(self,host,port):
